@@ -7,8 +7,15 @@ const emacsPort = args[2];
 // Show message in Emacs minibuffer.
 function messageToEmacs(message) {
     denoBridgeTypescriptSideClient.send(JSON.stringify({
-        "type": "message",
+        "type": "show-message",
         "content": message
+    }))
+}
+
+function evalInEmacs(code) {
+    denoBridgeTypescriptSideClient.send(JSON.stringify({
+        "type": "eval-code",
+        "content": code
     }))
 }
 
@@ -22,7 +29,7 @@ function getEmacsVar(varName) {
 
         client.on("open", function() {
             client.send(JSON.stringify({
-                "type": "var",
+                "type": "fetch-var",
                 "content": varName
             }));
 

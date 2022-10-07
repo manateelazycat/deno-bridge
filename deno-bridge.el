@@ -103,8 +103,9 @@
                          (let* ((info (json-parse-string (websocket-frame-text frame)))
                                 (info-type (gethash "type" info nil)))
                            (pcase info-type
-                             ("message" (message (gethash "content" info nil)))
-                             ("var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil))))))
+                             ("show-message" (message (gethash "content" info nil)))
+                             ("eval-code" (eval (read (gethash "content" info nil))))
+                             ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil))))))
                              )))
            :on-open (lambda (_websocket)
                       (setq deno-bridge-emacs-side-client (websocket-open (format "ws://127.0.0.1:%s" deno-port))))
