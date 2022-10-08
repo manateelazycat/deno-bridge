@@ -36,6 +36,52 @@ From here on, you can add the full path to the deno-bridge installation director
 (require deno-bridge)
 ```
 
+## Usage
+
+I write a demo to show you how simple write app base on deno-brige:
+
+### Elisp 
+
+```elisp
+(require 'deno-bridge)
+(setq deno-bridge-demo-ts-path (concat (file-name-directory load-file-name) "deno-bridge-demo.ts"))
+(deno-bridge-start "demo" deno-bridge-demo-ts-path "8686" "8687")
+(deno-bridge-call "demo" "ping" "Hello from Emacs.")
+```
+
+1. Start Deno process: `(deno-bridge-start "demo" deno-bridge-demo-ts-path "8686" "8687")`
+2. Call TypeScript function from Emacs: `(deno-bridge-call "demo" "ping" "Hello from Emacs.")`
+
+### TypeScript
+
+```typescript
+import { DenoBridge } from "./deno_bridge.ts"
+
+const bridge = new DenoBridge(Deno.args[0], Deno.args[1], Deno.args[2], messageDispatcher)
+
+async function messageDispatcher(message: string) {
+    const info = JSON.parse(message)
+    if (info[0] == "function") {
+        if (info[1] == "ping") {
+            console.log("Emacs message: ", info[2][0])
+            
+            const emacsVar = await bridge.getEmacsVar("deno-bridge-app-list")
+            console.log("Emacs var 'deno-bridge-app-list': ", emacsVar)
+            
+            bridge.messageToEmacs("Hi from TypeScript")
+            
+            bridge.evalInEmacs('(message \"Eval from TypeScript\")')
+        }
+    }
+}
+```
+
+1. Create DenoBridge object to communicate with Emacs
+2. Get Emacs variable value: `await bridge.getEmacsVar(emacs-var-name)`
+3. Show message in Emacs minibuffer: `bridge.messageToEmacs("message")`
+4. Eval Elisp code in TypeScript: `bridge.evalInEmacs('(message \"Eval from TypeScript\")')`
+
+**That's all story about deno-bridge.**
 
 ## Contributor
 <a href = "https://github.com/manateelazycat/deno-bridge/graphs/contributors">
