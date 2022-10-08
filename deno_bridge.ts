@@ -1,14 +1,14 @@
-import { WebSocketClient, WebSocketServer, StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mod.ts";
+import { WebSocketClient, WebSocketServer, StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mod.ts"
 
 class DenoBridge {
-    appName:string;
-    denoPort:string;
-    emacsPort:string;
+    appName:string
+    denoPort:string
+    emacsPort:string
     
-    server:WebSocketServer;
-    client:WebSocketClient;
+    server:WebSocketServer
+    client:WebSocketClient
     
-    messageHandler:(message:string) => void;
+    messageHandler:(message:string) => void
 
     constructor(appName:string, denoPort:string, emacsPort:string, messageHandler:(message:string) => void) {
         this.appName = appName
@@ -16,15 +16,15 @@ class DenoBridge {
         this.emacsPort = emacsPort
         this.messageHandler = messageHandler
 
-        this.server = new WebSocketServer(parseInt(this.denoPort));
+        this.server = new WebSocketServer(parseInt(this.denoPort))
         this.server.on("connection", (client: WebSocketClient) => {
-            client.on("message", this.messageHandler);
-        });
+            client.on("message", this.messageHandler)
+        })
 
-        this.client = new StandardWebSocketClient("ws://127.0.0.1:" + emacsPort);
+        this.client = new StandardWebSocketClient("ws://127.0.0.1:" + emacsPort)
         this.client.on("open", function() {
-            console.log("Deno bridge connected!");
-        });
+            console.log("Deno bridge connected!")
+        })
     }
 
     messageToEmacs(message: string) {
@@ -43,18 +43,18 @@ class DenoBridge {
 
     getEmacsVar(varName: string) {
         return new Promise((resolve, _) => {
-            const client: WebSocketClient = new StandardWebSocketClient("ws://127.0.0.1:" + this.emacsPort);
+            const client: WebSocketClient = new StandardWebSocketClient("ws://127.0.0.1:" + this.emacsPort)
             client.on("message", function (message) {
-                resolve(message["data"]);
-            });
+                resolve(message["data"])
+            })
 
             client.on("open", function() {
                 client.send(JSON.stringify({
                     "type": "fetch-var",
                     "content": varName
-                }));
+                }))
 
-            });
+            })
         })
     }
 
