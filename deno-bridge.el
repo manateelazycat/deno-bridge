@@ -86,53 +86,69 @@
 
 (setq deno-bridge-ts-path (concat (file-name-directory load-file-name) "deno_bridge.ts"))
 
-(defvar deno-bridge-process nil)
-(defvar deno-bridge-process-buffer nil)
+(defvar deno-bridge-app-list (list))
 
-(defvar deno-bridge-client nil)
-(defvar deno-bridge-server nil)
+(cl-defmacro deno-bridge-start (app-name deno-port emacs-port)
+  (if (member app-name deno-bridge-app-list)
+      (message "[DenoBridge] Application %s has start." app-name)
+    (let* ((server (intern (format "deno-bridge-server-%s" app-name)))
+           (process (intern (format "deno-bridge-process-%s" app-name)))
+           (process-buffer (format " *deno-bridge-app-%s*" app-name))
+           (client (intern (format "deno-bridge-client-%s" app-name))))
+      `(progn
+         (defvar ,process nil)
+         (defvar ,server nil)
+         (defvar ,client nil)
 
-(defun deno-bridge-start (app-name deno-port emacs-port)
-  (interactive)
-  (unless deno-bridge-server
-    (setq deno-bridge-server
-          (websocket-server
-           emacs-port
-           :host 'local
-           :on-message (lambda (_websocket frame)
-                         (let* ((info (json-parse-string (websocket-frame-text frame)))
-                                (info-type (gethash "type" info nil)))
-                           (pcase info-type
-                             ("show-message" (message (gethash "content" info nil)))
-                             ("eval-code" (eval (read (gethash "content" info nil))))
-                             ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil))))))
-                             )))
-           :on-open (lambda (_websocket)
-                      (setq deno-bridge-client (websocket-open (format "ws://127.0.0.1:%s" deno-port))))
-           :on-close (lambda (_websocket)))))
-  (unless deno-bridge-process
-    (setq deno-bridge-process-buffer app-name)
-    (setq deno-bridge-process
-          (start-process app-name app-name "deno" "run" "--allow-net" deno-bridge-ts-path app-name deno-port emacs-port))))
+         (setq ,server
+               (websocket-server
+                ,emacs-port
+                :host 'local
+                :on-message (lambda (_websocket frame)
+                              (let* ((info (json-parse-string (websocket-frame-text frame)))
+                                     (info-type (gethash "type" info nil)))
+                                (pcase info-type
+                                  ("show-message" (message (gethash "content" info nil)))
+                                  ("eval-code" (eval (read (gethash "content" info nil))))
+                                  ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil))))))
+                                  )))
+                :on-open (lambda (_websocket)
+                           (setq ,client (websocket-open (format "ws://127.0.0.1:%s" ,deno-port))))
+                :on-close (lambda (_websocket))))
+         (setq ,process
+               (start-process ,app-name ,process-buffer "deno" "run" "--allow-net" deno-bridge-ts-path ,app-name ,deno-port ,emacs-port))
+
+         (add-to-list 'deno-bridge-app-list ,app-name t)))))
 
 (defun deno-bridge-exit ()
   (interactive)
-  (when deno-bridge-server
-    (websocket-server-close deno-bridge-server)
-    (setq deno-bridge-server nil))
+  (let* ((app-name (completing-read "[DenoBridge] Exit application: " deno-bridge-app-list)))
+    (if (member app-name deno-bridge-app-list)
+        (let* ((server (intern-soft (format "deno-bridge-server-%s" app-name)))
+               (process (intern-soft (format "deno-bridge-process-%s" app-name)))
+               (process-buffer (format " *deno-bridge-app-%s*" app-name))
+               (client (intern-soft (format "deno-bridge-client-%s" app-name))))
+          (when server
+            (websocket-server-close (symbol-value server))
+            (makunbound server))
 
-  (when deno-bridge-client
-    (websocket-close deno-bridge-client)
-    (setq deno-bridge-client nil))
+          (when client
+            (websocket-close (symbol-value client))
+            (makunbound client))
 
-  (when deno-bridge-process
-    (kill-buffer deno-bridge-process-buffer)
-    (setq deno-bridge-process nil)))
+          (when process
+            (kill-buffer process-buffer)
+            (makunbound process))
 
-(defun deno-bridge-call (func-name &rest func-args)
+          (setq deno-bridge-app-list (delete app-name deno-bridge-app-list)))
+      (message "[DenoBridge] Application %s has exited." app-name))))
+
+(defun deno-bridge-call (app-name func-name &rest func-args)
   "Call Deno TypeScript function from Emacs."
-  (when deno-bridge-client
-    (websocket-send-text deno-bridge-client (json-encode (list "function" func-name func-args)))))
+  (if (member app-name deno-bridge-app-list)
+      (websocket-send-text (symbol-value (intern-soft (format "deno-bridge-client-%s" app-name)))
+                           (json-encode (list "function" func-name func-args)))
+    (message "[DenoBridge] Application %s has exited." app-name)))
 
 (provide 'deno-bridge)
 
