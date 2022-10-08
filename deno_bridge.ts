@@ -5,14 +5,14 @@ const denoPort = args[1];
 const emacsPort = args[2];
 
 // Show message in Emacs minibuffer.
-function messageToEmacs(message) {
+function messageToEmacs(message: string) {
     client.send(JSON.stringify({
         "type": "show-message",
         "content": message
     }))
 }
 
-function evalInEmacs(code) {
+function evalInEmacs(code: string) {
     client.send(JSON.stringify({
         "type": "eval-code",
         "content": code
@@ -20,10 +20,10 @@ function evalInEmacs(code) {
 }
 
 // Get Emacs variable with `await getEmacsVar`.
-function getEmacsVar(varName) {
+function getEmacsVar(varName: string) {
     return new Promise((resolve, _) => {
         const client: WebSocketClient = new StandardWebSocketClient("ws://127.0.0.1:" + emacsPort);
-        client.on("message", function (message: string) {
+        client.on("message", function (message) {
             resolve(message["data"]);
         });
 
