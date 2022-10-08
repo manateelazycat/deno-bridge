@@ -1,49 +1,65 @@
 import { WebSocketClient, WebSocketServer, StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mod.ts";
 
-const args = Deno.args;
-const denoPort = args[1];
-const emacsPort = args[2];
+class DenoBridge {
+    appName:string;
+    denoPort:string;
+    emacsPort:string;
+    
+    server:WebSocketServer;
+    client:WebSocketClient;
+    
+    messageHandler:(message:string) => void;
 
-// Show message in Emacs minibuffer.
-function messageToEmacs(message: string) {
-    client.send(JSON.stringify({
-        "type": "show-message",
-        "content": message
-    }))
-}
+    constructor(appName:string, denoPort:string, emacsPort:string, messageHandler:(message:string) => void) {
+        this.appName = appName
+        this.denoPort = denoPort
+        this.emacsPort = emacsPort
+        this.messageHandler = messageHandler
 
-function evalInEmacs(code: string) {
-    client.send(JSON.stringify({
-        "type": "eval-code",
-        "content": code
-    }))
-}
-
-// Get Emacs variable with `await getEmacsVar`.
-function getEmacsVar(varName: string) {
-    return new Promise((resolve, _) => {
-        const client: WebSocketClient = new StandardWebSocketClient("ws://127.0.0.1:" + emacsPort);
-        client.on("message", function (message) {
-            resolve(message["data"]);
+        this.server = new WebSocketServer(parseInt(this.denoPort));
+        this.server.on("connection", (client: WebSocketClient) => {
+            client.on("message", (message: string) => {
+                this.messageHandler(message)
+            });
         });
 
-        client.on("open", function() {
-            client.send(JSON.stringify({
-                "type": "fetch-var",
-                "content": varName
-            }));
-
+        this.client = new StandardWebSocketClient("ws://127.0.0.1:" + emacsPort);
+        this.client.on("open", function() {
+            console.log("Deno bridge connected!");
         });
-    })
+    }
+
+    messageToEmacs(message: string) {
+        this.client.send(JSON.stringify({
+            "type": "show-message",
+            "content": message
+        }))
+    }
+
+    evalInEmacs(code: string) {
+        this.client.send(JSON.stringify({
+            "type": "eval-code",
+            "content": code
+        }))
+    }
+
+    getEmacsVar(varName: string) {
+        return new Promise((resolve, _) => {
+            const client: WebSocketClient = new StandardWebSocketClient("ws://127.0.0.1:" + this.emacsPort);
+            client.on("message", function (message) {
+                resolve(message["data"]);
+            });
+
+            client.on("open", function() {
+                client.send(JSON.stringify({
+                    "type": "fetch-var",
+                    "content": varName
+                }));
+
+            });
+        })
+    }
+
 }
 
-const server = new WebSocketServer(denoPort.toString());
-server.on("connection", function (client: WebSocketClient) {
-    client.on("message", function (message: string) {
-    });
-});
-
-const client: WebSocketClient = new StandardWebSocketClient("ws://127.0.0.1:" + emacsPort);
-client.on("open", function() {
-    console.log("Deno bridge connected!");
-});
+new DenoBridge(Deno.args[0], Deno.args[1], Deno.args[2], (message: string) => { console.log("********* ", message) })
