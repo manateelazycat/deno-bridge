@@ -18,9 +18,7 @@ class DenoBridge {
 
         this.server = new WebSocketServer(parseInt(this.denoPort));
         this.server.on("connection", (client: WebSocketClient) => {
-            client.on("message", (message: string) => {
-                this.messageHandler(message)
-            });
+            client.on("message", this.messageHandler);
         });
 
         this.client = new StandardWebSocketClient("ws://127.0.0.1:" + emacsPort);
