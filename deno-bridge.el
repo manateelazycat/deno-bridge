@@ -145,7 +145,7 @@
   "Call Deno TypeScript function from Emacs."
   (if (member app-name deno-bridge-app-list)
       (websocket-send-text (symbol-value (intern-soft (format "deno-bridge-client-%s" app-name)))
-                           (json-encode (list "function" func-name func-args)))
+                           (json-encode (list func-name func-args)))
     (message "[DenoBridge] Application %s has exited." app-name)))
 
 (provide 'deno-bridge)
