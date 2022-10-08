@@ -1,4 +1,4 @@
-import { DenoBridge } from "./deno_bridge.ts"
+import { DenoBridge } from "https://deno.land/x/denobridge@0.0.1/mod.ts"
 
 const bridge = new DenoBridge(Deno.args[0], Deno.args[1], Deno.args[2], messageDispatcher)
 
