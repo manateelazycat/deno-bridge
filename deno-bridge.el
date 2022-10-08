@@ -84,11 +84,9 @@
 
 ;;; Code:
 
-(setq deno-bridge-ts-path (concat (file-name-directory load-file-name) "deno_bridge.ts"))
-
 (defvar deno-bridge-app-list (list))
 
-(cl-defmacro deno-bridge-start (app-name deno-port emacs-port)
+(cl-defmacro deno-bridge-start (app-name ts-path deno-port emacs-port)
   (if (member app-name deno-bridge-app-list)
       (message "[DenoBridge] Application %s has start." app-name)
     (let* ((server (intern (format "deno-bridge-server-%s" app-name)))
@@ -116,7 +114,7 @@
                            (setq ,client (websocket-open (format "ws://127.0.0.1:%s" ,deno-port))))
                 :on-close (lambda (_websocket))))
          (setq ,process
-               (start-process ,app-name ,process-buffer "deno" "run" "--allow-net" deno-bridge-ts-path ,app-name ,deno-port ,emacs-port))
+               (start-process ,app-name ,process-buffer "deno" "run" "--allow-net" ,ts-path ,app-name ,deno-port ,emacs-port))
 
          (add-to-list 'deno-bridge-app-list ,app-name t)))))
 

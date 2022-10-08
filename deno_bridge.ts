@@ -1,6 +1,6 @@
 import { WebSocketClient, WebSocketServer, StandardWebSocketClient } from "https://deno.land/x/websocket@v0.1.4/mod.ts"
 
-class DenoBridge {
+export class DenoBridge {
     appName:string
     denoPort:string
     emacsPort:string
@@ -59,5 +59,3 @@ class DenoBridge {
     }
 
 }
-
-new DenoBridge(Deno.args[0], Deno.args[1], Deno.args[2], (message: string) => { console.log("********* ", message) })
