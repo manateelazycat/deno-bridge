@@ -127,11 +127,13 @@
                (process-buffer (format " *deno-bridge-app-%s*" app-name))
                (client (intern-soft (format "deno-bridge-client-%s" app-name))))
           (when server
-            (websocket-server-close (symbol-value server))
+            (when (symbol-value server)
+              (websocket-server-close (symbol-value server)))
             (makunbound server))
 
           (when client
-            (websocket-close (symbol-value client))
+            (when (symbol-value client)
+              (websocket-close (symbol-value client)))
             (makunbound client))
 
           (when process
