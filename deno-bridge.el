@@ -86,10 +86,28 @@
 
 (defvar deno-bridge-app-list (list))
 
-(cl-defmacro deno-bridge-start (app-name ts-path deno-port emacs-port)
+(defun deno-bridge-get-free-port ()
+  (save-excursion
+    (let* ((process-buffer " *temp*")
+           (process (make-network-process
+                     :name process-buffer
+                     :buffer process-buffer
+                     :family 'ipv4
+                     :server t
+                     :host "127.0.0.1"
+                     :service t))
+           port)
+      (setq port (process-contact process))
+      (delete-process process)
+      (kill-buffer process-buffer)
+      (format "%s" (cadr port)))))
+
+(cl-defmacro deno-bridge-start (app-name ts-path)
   (if (member app-name deno-bridge-app-list)
       (message "[DenoBridge] Application %s has start." app-name)
-    (let* ((server (intern (format "deno-bridge-server-%s" app-name)))
+    (let* ((deno-port (deno-bridge-get-free-port))
+           (emacs-port (deno-bridge-get-free-port))
+           (server (intern (format "deno-bridge-server-%s" app-name)))
            (process (intern (format "deno-bridge-process-%s" app-name)))
            (process-buffer (format " *deno-bridge-app-%s*" app-name))
            (client (intern (format "deno-bridge-client-%s" app-name))))

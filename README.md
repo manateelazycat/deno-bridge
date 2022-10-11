@@ -45,11 +45,11 @@ I write a demo to show you how simple write app base on deno-brige:
 ```elisp
 (require 'deno-bridge)
 (setq deno-bridge-demo-ts-path (concat (file-name-directory load-file-name) "deno-bridge-demo.ts"))
-(deno-bridge-start "demo" deno-bridge-demo-ts-path "8686" "8687")
+(deno-bridge-start "demo" deno-bridge-demo-ts-path)
 (deno-bridge-call "demo" "ping" "Hello from Emacs.")
 ```
 
-1. Start Deno process: `(deno-bridge-start "demo" deno-bridge-demo-ts-path "8686" "8687")`
+1. Start Deno process: `(deno-bridge-start "demo" deno-bridge-demo-ts-path)`
 2. Call TypeScript function from Emacs: `(deno-bridge-call "demo" "ping" "Hello from Emacs.")`
 3. Clean Deno process: execute command `deno-bridge-exit` and select application name
 
