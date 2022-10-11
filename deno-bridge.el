@@ -114,7 +114,7 @@
                            (setq ,client (websocket-open (format "ws://127.0.0.1:%s" ,deno-port))))
                 :on-close (lambda (_websocket))))
          (setq ,process
-               (start-process ,app-name ,process-buffer "deno" "run" "--allow-net" ,ts-path ,app-name ,deno-port ,emacs-port))
+               (start-process ,app-name ,process-buffer "deno" "run" "-A" "--unstable" ,ts-path ,app-name ,deno-port ,emacs-port))
 
          (add-to-list 'deno-bridge-app-list ,app-name t)))))
 
