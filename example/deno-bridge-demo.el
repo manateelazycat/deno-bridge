@@ -85,8 +85,8 @@
 ;;; Code:
 
 (setq deno-bridge-demo-ts-path (concat (file-name-directory load-file-name) "deno-bridge-demo.ts"))
+(deno-bridge-start "demo" deno-bridge-demo-ts-path)
 
-;; (deno-bridge-start "demo" deno-bridge-demo-ts-path)
 ;; (deno-bridge-call "demo" "ping" "Hello from Emacs.")
 
 (provide 'deno-bridge-demo)
