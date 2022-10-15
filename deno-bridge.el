@@ -81,6 +81,7 @@
 
 ;;; Require
 (require 'websocket)
+(require 'ansi-color)
 
 ;;; Code:
 
@@ -131,8 +132,17 @@
                 :on-open (lambda (_websocket)
                            (setq ,client (websocket-open (format "ws://127.0.0.1:%s" ,deno-port))))
                 :on-close (lambda (_websocket))))
+         ;; Start Deno process.
          (setq ,process
                (start-process ,app-name ,process-buffer "deno" "run" "-A" "--unstable" ,ts-path ,app-name ,deno-port ,emacs-port))
+         
+         ;; Make sure ANSI color render correctly.
+         (set-process-sentinel
+          ,process
+          (lambda (p _m)
+            (when (eq 0 (process-exit-status p))
+              (with-current-buffer (process-buffer p)
+                (ansi-color-apply-on-region (point-min) (point-max))))))
 
          (add-to-list 'deno-bridge-app-list ,app-name t)))))
 
