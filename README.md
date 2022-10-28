@@ -36,7 +36,7 @@ From here on, you can add the full path to the deno-bridge installation director
 (require deno-bridge)
 ```
 
-## Usage
+## Example
 
 I write a demo to show you how simple write app base on deno-brige:
 
