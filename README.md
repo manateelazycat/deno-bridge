@@ -85,6 +85,7 @@ async function messageDispatcher(message: string) {
 
 ## Project base on deno-bridge
 
+* [deno-bridge-jieba](https://github.com/ginqi7/deno-bridge-jieba)
 * [emmet2-mode](https://github.com/P233/emmet2-mode)
 * [insert-translated-name](https://github.com/manateelazycat/insert-translated-name)
 
