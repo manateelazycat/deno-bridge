@@ -112,7 +112,7 @@
            (process (intern (format "deno-bridge-process-%s" app-name)))
            (process-buffer (format " *deno-bridge-app-%s*" app-name))
            (client (intern (format "deno-bridge-client-%s" app-name))))
-      `(progn
+      `(let ((process-environment (cons "NO_COLOR=true" process-environment)))
          (defvar ,process nil)
          (defvar ,server nil)
          (defvar ,client nil)
