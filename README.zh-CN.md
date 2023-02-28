@@ -33,7 +33,7 @@ git clone --depth=1 -b master https://github.com/manateelazycat/deno-bridge ~/.e
 
 ```Elisp
 (add-to-list 'load-path "~/.emacs.d/site-lisp/deno-bridge/")
-(require deno-bridge)
+(require 'deno-bridge)
 ```
 
 ## 示例
