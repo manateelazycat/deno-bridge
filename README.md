@@ -33,7 +33,7 @@ From here on, you can add the full path to the deno-bridge installation director
 
 ```Elisp
 (add-to-list 'load-path "~/.emacs.d/site-lisp/deno-bridge/")
-(require deno-bridge)
+(require 'deno-bridge)
 ```
 
 ## Example
