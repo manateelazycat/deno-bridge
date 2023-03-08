@@ -88,6 +88,7 @@ async function messageDispatcher(message: string) {
 * [deno-bridge-jieba](https://github.com/ginqi7/deno-bridge-jieba)
 * [emmet2-mode](https://github.com/P233/emmet2-mode)
 * [insert-translated-name](https://github.com/manateelazycat/insert-translated-name)
+* [deno-bridge-echo](https://github.com/nailuoGG/deno-bridge-echo)
 
 ## Contributor
 <a href = "https://github.com/manateelazycat/deno-bridge/graphs/contributors">
