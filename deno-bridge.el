@@ -127,15 +127,15 @@
                                 (pcase info-type
                                   ("show-message" (message (gethash "content" info nil)))
                                   ("eval-code" (eval (read (gethash "content" info nil))))
-                                  ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil))))))
-                                  )))
+                                  ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil)))))))))
+
                 :on-open (lambda (_websocket)
                            (setq ,client (websocket-open (format "ws://127.0.0.1:%s" ,deno-port))))
                 :on-close (lambda (_websocket))))
          ;; Start Deno process.
          (setq ,process
-               (start-process ,app-name ,process-buffer "deno" "run" "-A" "--unstable" ,ts-path ,app-name ,deno-port ,emacs-port))
-         
+               (start-process ,app-name ,process-buffer "deno" "run" "--allow-net=127.0.0.1" "--unstable" ,ts-path ,app-name ,deno-port ,emacs-port))
+
          ;; Make sure ANSI color render correctly.
          (set-process-sentinel
           ,process
