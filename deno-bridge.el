@@ -164,12 +164,12 @@
               (websocket-close (symbol-value client)))
             (makunbound client))
 
-              (let ((old-kill-buffer-query-functions kill-buffer-query-functions))
-              (when process
-                (let ((kill-buffer-query-functions nil))  ; Disable process check temporarily
+          (let ((old-kill-buffer-query-functions kill-buffer-query-functions))
+            (when process
+              (let ((kill-buffer-query-functions nil))  ; Disable process check temporarily
                 (kill-buffer process-buffer)
                 (makunbound process))
-                (setq kill-buffer-query-functions old-kill-buffer-query-functions)))
+              (setq kill-buffer-query-functions old-kill-buffer-query-functions)))
 
           (setq deno-bridge-app-list (delete app-name deno-bridge-app-list)))
       (message "[DenoBridge] Application %s has exited." app-name))))
