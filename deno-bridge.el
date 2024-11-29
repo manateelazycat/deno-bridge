@@ -127,15 +127,15 @@
                                 (pcase info-type
                                   ("show-message" (message (gethash "content" info nil)))
                                   ("eval-code" (eval (read (gethash "content" info nil))))
-                                  ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil))))))
-                                  )))
+                                  ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil)))))))))
+
                 :on-open (lambda (_websocket)
                            (setq ,client (websocket-open (format "ws://127.0.0.1:%s" ,deno-port))))
                 :on-close (lambda (_websocket))))
          ;; Start Deno process.
          (setq ,process
-               (start-process ,app-name ,process-buffer "deno" "run" "-A" "--unstable" ,ts-path ,app-name ,deno-port ,emacs-port))
-         
+               (start-process ,app-name ,process-buffer "deno" "run" "--allow-net=127.0.0.1",ts-path ,app-name ,deno-port ,emacs-port))
+
          ;; Make sure ANSI color render correctly.
          (set-process-sentinel
           ,process
@@ -164,9 +164,12 @@
               (websocket-close (symbol-value client)))
             (makunbound client))
 
-          (when process
-            (kill-buffer process-buffer)
-            (makunbound process))
+          (let ((old-kill-buffer-query-functions kill-buffer-query-functions))
+            (when process
+              (let ((kill-buffer-query-functions nil))  ; Disable process check temporarily
+                (kill-buffer process-buffer)
+                (makunbound process))
+              (setq kill-buffer-query-functions old-kill-buffer-query-functions)))
 
           (setq deno-bridge-app-list (delete app-name deno-bridge-app-list)))
       (message "[DenoBridge] Application %s has exited." app-name))))
