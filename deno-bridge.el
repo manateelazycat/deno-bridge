@@ -122,12 +122,21 @@
                 ,emacs-port
                 :host 'local
                 :on-message (lambda (_websocket frame)
-                              (let* ((info (json-parse-string (websocket-frame-text frame)))
-                                     (info-type (gethash "type" info nil)))
-                                (pcase info-type
-                                  ("show-message" (message (gethash "content" info nil)))
-                                  ("eval-code" (eval (read (gethash "content" info nil))))
-                                  ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil)))))))))
+                              (let ((text (websocket-frame-text frame))
+                                    (opcode (websocket-frame-opcode frame)))
+
+                                ;; Only process text frames
+                                (when (eq opcode 'text)
+                                  (condition-case err
+                                      (let* ((info (json-parse-string text))
+                                             (info-type (gethash "type" info nil)))
+                                        (pcase info-type
+                                          ("show-message" (message (gethash "content" info nil)))
+                                          ("eval-code" (eval (read (gethash "content" info nil))))
+                                          ("fetch-var" (websocket-send-text _websocket (json-encode (eval (read (gethash "content" info nil))))))))
+                                    (json-parse-error
+                                     (when emacs-conductor-enable-debug
+                                       (message "Received malformed JSON in text frame: %S" text)))))))
 
                 :on-open (lambda (_websocket)
                            (setq ,client (websocket-open (format "ws://127.0.0.1:%s" ,deno-port))))
