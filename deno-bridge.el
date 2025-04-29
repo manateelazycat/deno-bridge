@@ -143,7 +143,7 @@
                 :on-close (lambda (_websocket))))
          ;; Start Deno process.
          (setq ,process
-               (start-process ,app-name ,process-buffer "deno" "run" "--allow-net=127.0.0.1",ts-path ,app-name ,deno-port ,emacs-port))
+               (start-process ,app-name ,process-buffer "deno" "run" "--allow-all",ts-path ,app-name ,deno-port ,emacs-port))
 
          ;; Make sure ANSI color render correctly.
          (set-process-sentinel
